@@ -169,14 +169,18 @@ window.onload = async () => {
     const navLinksList = document.querySelector('.nav-links');
 
     if (isLoggedIn === 'true' && userId) {
-        let userAvatar = "👤"; // 기본값
+        let userAvatar = "👤"; 
         try {
             const userSnap = await get(ref(db, `users/${userId}`));
             if (userSnap.exists() && userSnap.val().avatar) {
-                const avatarData = userSnap.val().avatar;
+                let avatarData = userSnap.val().avatar;
                 
-                // [수정 포인트] 경로가 포함되지 않은 파일명만 있을 경우 경로를 강제로 추가
-                if (avatarData.includes('image-') && !avatarData.includes('/')) {
+                // [수정 포인트] 
+                // 1. Firebase 데이터가 "../images/"로 시작하면 이를 "images/"로 보정
+                // 2. 파일명만 있는 경우 "images/profiles/" 추가
+                if (avatarData.startsWith('../')) {
+                    userAvatar = avatarData.replace('../', ''); 
+                } else if (avatarData.includes('image-') && !avatarData.includes('/')) {
                     userAvatar = `images/profiles/${avatarData}`;
                 } else {
                     userAvatar = avatarData;
@@ -184,14 +188,16 @@ window.onload = async () => {
             }
         } catch (e) { console.error("Avatar Load Error:", e); }
 
-        // 이미지 태그 생성 로직 (기존 유지 혹은 경로 확인)
+        // 이미지 HTML 생성 (style 수정 포함)
         const avatarHtml = (userAvatar.includes('/') || userAvatar.includes('http')) 
-            ? `<img src="${userAvatar}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle; margin-right:10px; border:1px solid var(--cyan); object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=${userId}'">` 
+            ? `<img src="${userAvatar}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle; margin-right:8px; border:1px solid var(--cyan); object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=${userId}'">` 
             : `<span style="margin-right:8px; font-size:1.5rem; vertical-align:middle;">${userAvatar}</span>`;
 
         loginBtn.innerHTML = `${avatarHtml}LOGOUT (${userId})`;
         loginBtn.href = "#";
         loginBtn.addEventListener('click', window.handleLogout);
+
+        // ... 이하 기존 코드 유지
 
         signupBtn.innerText = "EDIT_PROFILE";
         signupBtn.href = "profile.html";
