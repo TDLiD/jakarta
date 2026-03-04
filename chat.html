@@ -6,59 +6,941 @@
     <title>Chat Terminal | Jakarta Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Space+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/style.css">
     <style>
         :root {
-            --bg: #010204; --surface: #0a1118;
-            --chrome: #c8d8e8; --gold: #d4a843;
-            --cyan: #00d4ff; --border: rgba(0,212,255,0.1);
-            --text: #cdd8e3; --danger: #ff4d4d;
+            --bg: #010204; 
+            --surface: #0a1118;
+            --surface-elevated: #0f1922;
+            --chrome: #c8d8e8; 
+            --gold: #d4a843;
+            --cyan: #00d4ff; 
+            --cyan-glow: rgba(0, 212, 255, 0.3);
+            --gold-glow: rgba(212, 168, 67, 0.3);
+            --border: rgba(0,212,255,0.15);
+            --text: #cdd8e3; 
+            --text-soft: #8b9aaa;
+            --danger: #ff4d4d;
+            --success: #00ff88;
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: var(--bg); color: var(--text);
-            font-family: 'Space Mono', monospace; margin: 0;
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            background: linear-gradient(135deg, #010204 0%, #0a0e14 100%);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
-        
-        /* 헤더 및 참여자 리스트 */
+
+        /* 고급스러운 배경 효과 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(212, 168, 67, 0.03) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* 스캔라인 효과 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                rgba(0, 212, 255, 0.01) 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* 프리미엄 헤더 */
         header {
-            padding: 15px 20px; border-bottom: 1px solid var(--border);
-            background: var(--surface); display: flex; flex-direction: column; gap: 10px;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
+            backdrop-filter: blur(20px) saturate(180%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                0 1px 0 rgba(0, 212, 255, 0.1) inset,
+                0 0 30px rgba(0, 212, 255, 0.05);
         }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
-        .room-info h1 { font-family: 'Syne', sans-serif; font-size: 1.1rem; margin: 0; color: var(--cyan); }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: headerGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .room-info h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            margin: 8px 0 0 0;
+            color: var(--cyan);
+            text-shadow: 
+                0 0 10px var(--cyan-glow),
+                0 0 20px var(--cyan-glow),
+                0 2px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            animation: titlePulse 4s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { text-shadow: 0 0 10px var(--cyan-glow), 0 0 20px var(--cyan-glow); }
+            50% { text-shadow: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-glow); }
+        }
+
+        #user-display {
+            font-size: 0.75rem;
+            color: var(--gold);
+            background: rgba(212, 168, 67, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 168, 67, 0.3);
+            box-shadow: 0 0 15px var(--gold-glow);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
         .participant-bar {
-            font-size: 0.7rem; color: var(--chrome); opacity: 0.8;
-            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-soft);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 10px 0;
         }
-        .user-tag { background: rgba(0,212,255,0.1); padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border); }
 
-        /* 채팅 영역 */
-        #chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg-bubble { max-width: 80%; padding: 10px 15px; border-radius: 4px; position: relative; }
-        .msg-remote { background: rgba(200,216,232,0.05); align-self: flex-start; border-left: 2px solid var(--cyan); }
-        .msg-me { background: rgba(212,168,67,0.1); align-self: flex-end; border-right: 2px solid var(--gold); }
-        
-        .msg-header { display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--gold); margin-bottom: 5px; gap: 20px;}
-        .msg-text { font-size: 0.9rem; word-break: break-all; white-space: pre-wrap; }
-        
-        /* 수정/삭제 버튼 */
-        .msg-actions { display: flex; gap: 8px; cursor: pointer; }
-        .msg-actions span:hover { color: white; text-decoration: underline; }
+        .user-tag {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 212, 255, 0.15) 100%);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 10px rgba(0, 212, 255, 0.1);
+        }
 
-        /* 입력창 및 이모티콘 */
-        .controls { background: var(--surface); border-top: 1px solid var(--border); padding: 15px; }
-        .emoji-row { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .emoji-btn { cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
-        .emoji-btn:hover { transform: scale(1.3); }
-        
-        .input-area { display: flex; gap: 10px; }
+        .user-tag:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.25) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px var(--cyan-glow);
+            border-color: var(--cyan);
+        }
+
+        .back-btn {
+            color: var(--text-soft);
+            text-decoration: none;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            opacity: 1;
+            color: var(--cyan);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(-3px);
+        }
+
+        /* 프리미엄 채팅 영역 */
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--cyan), var(--gold));
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--gold), var(--cyan));
+        }
+
+        /* 고급스러운 메시지 버블 */
+        .msg-bubble {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: messageSlide 0.4s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .msg-bubble:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .msg-remote {
+            background: linear-gradient(135deg, rgba(200, 216, 232, 0.05) 0%, rgba(200, 216, 232, 0.08) 100%);
+            align-self: flex-start;
+            border-left: 3px solid var(--cyan);
+            box-shadow: 
+                -5px 5px 20px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .msg-remote:hover {
+            border-left-color: var(--gold);
+            box-shadow: 
+                -8px 8px 30px rgba(0, 0, 0, 0.5),
+                0 0 30px var(--cyan-glow);
+        }
+
+        .msg-me {
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.08) 0%, rgba(212, 168, 67, 0.15) 100%);
+            align-self: flex-end;
+            border-right: 3px solid var(--gold);
+            box-shadow: 
+                5px 5px 20px rgba(0, 0, 0, 0.3),
+                0 0 20px var(--gold-glow);
+        }
+
+        .msg-me:hover {
+            border-right-color: var(--cyan);
+            box-shadow: 
+                8px 8px 30px rgba(0, 0, 0, 0.5),
+                0 0 30px var(--gold-glow);
+        }
+
+        .msg-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+            gap: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            flex-wrap: wrap;
+        }
+
+        .msg-text {
+            font-size: 0.95rem;
+            word-break: break-word;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        /* 프리미엄 호버 액션 바 */
+        .msg-hover-actions {
+            position: absolute;
+            top: -35px;
+            right: 10px;
+            background: linear-gradient(135deg, var(--surface-elevated), rgba(15, 25, 34, 0.98));
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            display: none;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 
+                0 -5px 20px rgba(0, 0, 0, 0.5),
+                0 0 20px var(--cyan-glow);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .msg-bubble:hover .msg-hover-actions {
+            display: flex;
+            animation: actionSlide 0.3s ease-out;
+        }
+
+        @keyframes actionSlide {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-icon {
+            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            color: var(--text-soft);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .action-icon:hover {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--cyan);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        /* 수정/삭제 버튼 스타일 개선 */
+        .msg-actions {
+            display: flex;
+            gap: 10px;
+            cursor: pointer;
+            flex-wrap: wrap;
+        }
+
+        .msg-actions span {
+            padding: 3px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .msg-actions span:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .msg-actions span:first-child:hover {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .msg-actions span:last-child:hover {
+            background: rgba(255, 77, 77, 0.2);
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+        }
+
+        /* 프리미엄 리액션 컨테이너 */
+        .reaction-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .reaction-badge {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 212, 255, 0.15));
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .reaction-badge:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.3));
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 15px var(--cyan-glow);
+            border-color: var(--cyan);
+        }
+
+        .reaction-badge.reacted-me {
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.2), rgba(212, 168, 67, 0.3));
+            border-color: var(--gold);
+            box-shadow: 0 2px 8px var(--gold-glow);
+        }
+
+        .reaction-badge.reacted-me:hover {
+            box-shadow: 0 5px 15px var(--gold-glow);
+        }
+
+        /* 인용 메시지 스타일 */
+        .quoted-msg {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 2px solid var(--gold);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        /* 프리미엄 컨트롤 패널 */
+        .controls {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-top: 1px solid var(--border);
+            padding: 20px 30px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 
+                0 -10px 40px rgba(0, 0, 0, 0.5),
+                0 -1px 0 rgba(0, 212, 255, 0.1) inset;
+        }
+
+        .controls::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: controlGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes controlGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 답장 프리뷰 박스 */
+        .reply-preview {
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.1), rgba(212, 168, 67, 0.15));
+            border: 1px solid rgba(212, 168, 67, 0.3);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            box-shadow: 0 3px 15px rgba(212, 168, 67, 0.2);
+        }
+
+        .close-reply {
+            cursor: pointer;
+            color: var(--danger);
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .close-reply:hover {
+            background: rgba(255, 77, 77, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* 프리미엄 이모티콘 바 */
+        .emoji-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding: 10px 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .emoji-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .emoji-row::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .emoji-row::-webkit-scrollbar-thumb {
+            background: var(--cyan);
+            border-radius: 10px;
+        }
+
+        .emoji-btn {
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 6px;
+            filter: grayscale(0.3);
+            flex-shrink: 0;
+        }
+
+        .emoji-btn:hover {
+            transform: scale(1.4) rotate(10deg);
+            filter: grayscale(0) drop-shadow(0 0 10px var(--cyan-glow));
+        }
+
+        /* 프리미엄 입력 영역 */
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+
         input {
-            flex: 1; background: #050a0f; border: 1px solid var(--border);
-            padding: 12px; color: white; outline: none; border-radius: 4px; font-family: inherit;
+            flex: 1;
+            background: linear-gradient(135deg, #050a0f 0%, #0a1118 100%);
+            border: 1px solid var(--border);
+            padding: 14px 18px;
+            color: white;
+            outline: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+            min-width: 0;
         }
-        .send-btn { background: var(--cyan); border: none; padding: 0 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        .back-btn { color: var(--text); text-decoration: none; font-size: 0.7rem; opacity: 0.6; }
+
+        input:focus {
+            border-color: var(--cyan);
+            box-shadow: 
+                inset 0 2px 8px rgba(0, 0, 0, 0.5),
+                0 0 20px var(--cyan-glow);
+            background: linear-gradient(135deg, #0a1118 0%, #0f1922 100%);
+        }
+
+        input::placeholder {
+            color: var(--text-soft);
+        }
+
+        /* 프리미엄 전송 버튼 */
+        .send-btn {
+            background: linear-gradient(135deg, var(--cyan) 0%, #0099cc 100%);
+            border: none;
+            padding: 0 30px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: inherit;
+            color: #000;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 5px 20px rgba(0, 212, 255, 0.3),
+                0 0 20px var(--cyan-glow);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .send-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .send-btn:hover {
+            background: linear-gradient(135deg, var(--gold) 0%, #c99a3a 100%);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 8px 30px var(--gold-glow),
+                0 0 40px var(--gold-glow);
+        }
+
+        .send-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .send-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* 추가 애니메이션 효과 */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .user-tag {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .user-tag:nth-child(2n) {
+            animation-delay: 0.5s;
+        }
+
+        .user-tag:nth-child(3n) {
+            animation-delay: 1s;
+        }
+
+        /* ========== 모바일 반응형 CSS ========== */
+        
+        /* 태블릿 (1024px 이하) */
+        @media (max-width: 1024px) {
+            header {
+                padding: 18px 25px;
+            }
+
+            .room-info h1 {
+                font-size: 1.2rem;
+            }
+
+            #chat-messages {
+                padding: 25px 20px;
+                gap: 18px;
+            }
+
+            .msg-bubble {
+                max-width: 80%;
+                padding: 14px 18px;
+            }
+
+            .controls {
+                padding: 18px 25px;
+            }
+        }
+
+        /* 모바일 (768px 이하) */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 15px;
+                gap: 10px;
+            }
+
+            .header-top {
+                gap: 8px;
+            }
+
+            .room-info h1 {
+                font-size: 1rem;
+                letter-spacing: 1px;
+                margin: 5px 0 0 0;
+            }
+
+            .back-btn {
+                font-size: 0.65rem;
+            }
+
+            #user-display {
+                font-size: 0.65rem;
+                padding: 5px 10px;
+            }
+
+            .participant-bar {
+                font-size: 0.65rem;
+                gap: 6px;
+                padding: 8px 0;
+            }
+
+            .user-tag {
+                padding: 3px 8px;
+                font-size: 0.65rem;
+            }
+
+            #chat-messages {
+                padding: 20px 15px;
+                gap: 15px;
+            }
+
+            .msg-bubble {
+                max-width: 85%;
+                padding: 12px 15px;
+            }
+
+            .msg-header {
+                font-size: 0.6rem;
+                gap: 10px;
+            }
+
+            .msg-text {
+                font-size: 0.85rem;
+            }
+
+            .msg-hover-actions {
+                top: -30px;
+                padding: 5px 8px;
+                gap: 8px;
+            }
+
+            .action-icon {
+                font-size: 0.6rem;
+                padding: 3px 6px;
+            }
+
+            .msg-actions span {
+                font-size: 0.55rem;
+                padding: 2px 6px;
+            }
+
+            .reaction-badge {
+                font-size: 0.7rem;
+                padding: 3px 8px;
+            }
+
+            .quoted-msg {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+            }
+
+            .controls {
+                padding: 15px 15px;
+            }
+
+            .reply-preview {
+                font-size: 0.7rem;
+                padding: 8px 12px;
+                margin-bottom: 12px;
+            }
+
+            .emoji-row {
+                gap: 10px;
+                margin-bottom: 12px;
+                padding: 8px 5px;
+            }
+
+            .emoji-btn {
+                font-size: 1.1rem;
+            }
+
+            .input-area {
+                gap: 10px;
+            }
+
+            input {
+                padding: 12px 15px;
+                font-size: 0.85rem;
+            }
+
+            .send-btn {
+                padding: 0 20px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* 소형 모바일 (480px 이하) */
+        @media (max-width: 480px) {
+            header {
+                padding: 12px 10px;
+            }
+
+            .room-info h1 {
+                font-size: 0.9rem;
+            }
+
+            .back-btn {
+                font-size: 0.6rem;
+                padding: 3px 6px;
+            }
+
+            #user-display {
+                font-size: 0.6rem;
+                padding: 4px 8px;
+            }
+
+            .participant-bar {
+                font-size: 0.6rem;
+                gap: 5px;
+            }
+
+            .user-tag {
+                padding: 2px 6px;
+                font-size: 0.6rem;
+            }
+
+            #chat-messages {
+                padding: 15px 10px;
+                gap: 12px;
+            }
+
+            .msg-bubble {
+                max-width: 90%;
+                padding: 10px 12px;
+            }
+
+            .msg-header {
+                font-size: 0.55rem;
+            }
+
+            .msg-text {
+                font-size: 0.8rem;
+            }
+
+            .controls {
+                padding: 12px 10px;
+            }
+
+            .emoji-row {
+                gap: 8px;
+                padding: 6px 3px;
+            }
+
+            .emoji-btn {
+                font-size: 1rem;
+            }
+
+            input {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+
+            .send-btn {
+                padding: 0 15px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* 초소형 모바일 (360px 이하) */
+        @media (max-width: 360px) {
+            .room-info h1 {
+                font-size: 0.8rem;
+            }
+
+            .msg-bubble {
+                padding: 8px 10px;
+            }
+
+            .msg-text {
+                font-size: 0.75rem;
+            }
+
+            .send-btn {
+                padding: 0 12px;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* 가로 모드 모바일 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            header {
+                padding: 10px 15px;
+            }
+
+            .room-info h1 {
+                font-size: 0.9rem;
+            }
+
+            #chat-messages {
+                padding: 15px;
+            }
+
+            .controls {
+                padding: 10px 15px;
+            }
+
+            .emoji-row {
+                margin-bottom: 8px;
+            }
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .action-icon,
+            .reaction-badge,
+            .emoji-btn,
+            .send-btn,
+            .back-btn {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .msg-hover-actions {
+                /* 모바일에서는 탭으로 액션 표시 */
+                position: relative;
+                top: auto;
+                right: auto;
+                display: flex;
+                margin-top: 10px;
+                padding: 8px;
+            }
+
+            .msg-bubble:hover .msg-hover-actions {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
@@ -66,23 +948,23 @@
 <header>
     <div class="header-top">
         <div class="room-info">
-            <a href="index.html" class="back-btn">< EXIT_HUB</a>
+            <a href="index.html" class="back-btn">◄ EXIT_HUB</a>
             <h1 id="room-title">CHNL//LOADING</h1>
         </div>
         <div id="user-display" style="font-size: 0.7rem; color: var(--gold);">IDENTIFYING...</div>
     </div>
     <div class="participant-bar" id="participant-list">
         <span>ACTIVE_CITIZENS:</span>
-        </div>
+    </div>
 </header>
 
 <div id="chat-messages"></div>
 
 <div class="controls">
-    <div id="reply-box" class="reply-preview">
-        <span id="reply-text"></span>
-        <span class="close-reply" onclick="cancelReply()">[X]</span>
-    </div>
+<div id="reply-box" class="reply-preview" style="display: none; align-items: center; justify-content: space-between;">
+    <span id="reply-text" style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+    <span class="close-reply" onclick="cancelReply()" style="cursor: pointer; margin-left: 10px; color: var(--gold); font-weight: bold;">[X]</span>
+</div>
     <div class="emoji-row">
         <span class="emoji-btn">😎</span><span class="emoji-btn">🔥</span><span class="emoji-btn">✨</span>
         <span class="emoji-btn">🙌</span><span class="emoji-btn">👍</span><span class="emoji-btn">💻</span>
@@ -109,15 +991,14 @@
     const userId = sessionStorage.getItem('userId') || sessionStorage.getItem('guestId') || 'Anon_' + Math.floor(Math.random()*100);
     
     const avatarCache = {};
-    let currentReplyTo = null; // [추가] 답장 대상 저장용
+    let currentReplyTo = null;
 
-    // [추가] 답장 설정 및 취소 함수
     window.setReply = (sender, text) => {
         currentReplyTo = { sender, text };
         const replyBox = document.getElementById('reply-box');
         const replyText = document.getElementById('reply-text');
         replyText.innerText = `Replying to @${sender}: ${text.substring(0, 30)}...`;
-        replyBox.style.display = 'block';
+        replyBox.style.display = 'flex';
         document.getElementById('msg-input').focus();
     };
 
@@ -126,24 +1007,19 @@
         document.getElementById('reply-box').style.display = 'none';
     };
 
-// [수정] 리액션 토글 함수 (유저당 1회 제한 및 취소 가능)
 window.addReaction = async (date, key, emoji) => {
-    // 1. 경로 설정
     const basePath = date === "Legacy" 
         ? `messages/${roomId}/${key}/reactions/${emoji}` 
         : `messages/${roomId}/${date}/${key}/reactions/${emoji}`;
     
-    // 2. 해당 이모티콘 아래의 내 유저 ID 참조
     const myReactionRef = ref(db, `${basePath}/${userId}`);
     
     try {
         const snap = await get(myReactionRef);
         if (snap.exists()) {
-            // 이미 클릭했다면 -> 취소 (데이터 삭제)
             await remove(myReactionRef);
             console.log(`[System] Reaction ${emoji} removed.`);
         } else {
-            // 클릭하지 않았다면 -> 추가 (내 ID 저장)
             await set(myReactionRef, true);
             console.log(`[System] Reaction ${emoji} added.`);
         }
@@ -200,13 +1076,11 @@ window.addReaction = async (date, key, emoji) => {
         } catch (e) { return "👤"; }
     }
 
-// [수정] 메시지 화면 표시 함수 (이미지 프로필 대응 및 답장/리액션 로직)
 async function renderMessage(dateLabel, msgId, msgData) {
     const isMe = msgData.sender === userId;
     const avatar = await getUserAvatar(msgData.sender);
     const timeStr = msgData.timestamp ? new Date(msgData.timestamp).toLocaleTimeString() : "Unknown";
 
-    // --- [추가] 아바타가 이미지 경로인지 확인하여 HTML 생성 ---
     const avatarHtml = avatar.includes('/') 
         ? `<img src="${avatar}" style="width:18px; height:18px; border-radius:50%; vertical-align:middle; margin-right:4px; border:1px solid var(--cyan); object-fit:cover;">` 
         : `<span>${avatar}</span>`;
@@ -214,7 +1088,6 @@ async function renderMessage(dateLabel, msgId, msgData) {
     const div = document.createElement('div');
     div.className = `msg-bubble ${isMe ? 'msg-me' : 'msg-remote'}`;
     
-    // 리액션 배지 생성 부분
     let reactionsHtml = '<div class="reaction-container">';
     if (msgData.reactions) {
         Object.entries(msgData.reactions).forEach(([emoji, users]) => {
@@ -232,7 +1105,6 @@ async function renderMessage(dateLabel, msgId, msgData) {
     }
     reactionsHtml += '</div>';
 
-    // 답장/리액션 호버 액션 바
     const hoverActions = `
         <div class="msg-hover-actions">
             <span class="action-icon" onclick="setReply('${msgData.sender}', \`${msgData.text.replace(/`/g, "\\`")}\`)">REPLY</span>
@@ -249,7 +1121,6 @@ async function renderMessage(dateLabel, msgId, msgData) {
         </div>
     ` : '';
 
-    // --- [수정] msg-header 부분에 avatar 대신 avatarHtml 적용 ---
     div.innerHTML = `
         ${hoverActions}
         <div class="msg-header">
@@ -278,7 +1149,6 @@ async function renderMessage(dateLabel, msgId, msgData) {
     set(ref(db, `rooms/${roomId}/participants/${userId}`), true);
     onDisconnect(ref(db, `rooms/${roomId}/participants/${userId}`)).remove();
 
-// [수정] 참여자 리스트 업데이트 로직
 onValue(ref(db, `rooms/${roomId}/participants`), async (snapshot) => {
     const listDiv = document.getElementById('participant-list');
     listDiv.innerHTML = '<span>ACTIVE_CITIZENS:</span>';
@@ -286,7 +1156,6 @@ onValue(ref(db, `rooms/${roomId}/participants`), async (snapshot) => {
         for (const u of Object.keys(snapshot.val())) {
             const avatar = await getUserAvatar(u);
             
-            // 이미지 여부 확인
             const avatarHtml = avatar.includes('/') 
                 ? `<img src="${avatar}" style="width:14px; height:14px; border-radius:50%; vertical-align:middle; margin-right:4px;">` 
                 : avatar;
@@ -312,7 +1181,6 @@ onValue(ref(db, `rooms/${roomId}/participants`), async (snapshot) => {
         }
     });
 
-    // [수정] 메시지 전송 로직 (답장 데이터 포함)
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const text = msgInput.value.trim();
@@ -331,7 +1199,7 @@ onValue(ref(db, `rooms/${roomId}/participants`), async (snapshot) => {
 
             push(ref(db, `messages/${roomId}/${today}`), payload);
             msgInput.value = '';
-            window.cancelReply(); // 답장 모드 해제
+            window.cancelReply();
         }
     });
 
