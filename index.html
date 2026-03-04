@@ -15,6 +15,11 @@
 </head>
 <body>
 
+<div class="background-slideshow">
+    <div class="bg-slide active"></div>
+    <div class="bg-slide"></div>
+</div>
+
     <div id="cursor-dot"></div>
     <div id="cursor-ring"></div>
     <div class="orb orb-1"></div>
@@ -59,7 +64,6 @@
             </div>
         </section>
 
-
     </main>
 
     <footer class="main-footer">
@@ -67,6 +71,55 @@
     </footer>
 
 <script type="module">
+
+// [새로운 배경 로직] 페이지 로드마다 랜덤 자카르타 이미지
+const jakartaImages = [
+    'https://images.unsplash.com/photo-1555899434-94d1285a46b2?w=1920&q=80', // Monas
+    'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=1920&q=80', // Jakarta Night
+    'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=1920&q=80', // Istiqlal Mosque
+    'https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?w=1920&q=80', // Jakarta Skyline
+    'https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=1920&q=80', // Jakarta Downtown
+    'https://images.unsplash.com/photo-1559628376-f3fe5f782a2e?w=1920&q=80', // Jakarta City
+];
+
+const slides = document.querySelectorAll('.bg-slide');
+let currentSlide = 0;
+
+// 랜덤 이미지 배열 생성 (중복 없이)
+function getShuffledImages() {
+    const shuffled = [...jakartaImages].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, slides.length);
+}
+
+// 초기 이미지 설정
+const selectedImages = getShuffledImages();
+slides.forEach((slide, index) => {
+    const img = new Image();
+    img.src = selectedImages[index];
+    img.onload = () => {
+        slide.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('${selectedImages[index]}')`;
+        if (index === 0) {
+            slide.classList.add('active');
+        }
+    };
+    img.onerror = () => {
+        // 이미지 로드 실패 시 기본 그라디언트 배경
+        slide.style.background = 'linear-gradient(135deg, #0a1520 0%, #020407 100%)';
+        if (index === 0) {
+            slide.classList.add('active');
+        }
+    };
+});
+
+// 자동 슬라이드 전환 (6초마다)
+function nextSlide() {
+    slides[currentSlide].classList.remove('active');
+    currentSlide = (currentSlide + 1) % slides.length;
+    slides[currentSlide].classList.add('active');
+}
+
+setInterval(nextSlide, 6000);
+
     // 1. 필요한 함수(get 등)를 상단 import 문에 모두 모았습니다.
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
