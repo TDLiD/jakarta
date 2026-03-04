@@ -251,9 +251,11 @@ const defaultRooms = [
 ];
 
 window.enterRoom = async (roomId) => {
+/*
     if (sessionStorage.getItem('isLoggedIn') !== 'true') {
         alert("ACCESS DENIED: Login required."); return;
     }
+*/
     const snapshot = await get(ref(db, `rooms/${roomId}/participants`));
     const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
     if (count >= 50) { alert(`ROOM FULL (Max 50)`); return; }
@@ -332,3 +334,4 @@ if(menuToggle && navLinksContainer) {
 </script>
 </body>
 </html>
+
