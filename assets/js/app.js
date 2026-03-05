@@ -345,23 +345,27 @@ async function addComment(postKey) {
 // app.js의 updateUI 함수를 아래와 같이 수정/추가하세요.
 
 function updateUI() {
-    // index.html의 로그인 정보도 체크
+    // 1. 세션 정보 체크
     const isAdmin = sessionStorage.getItem('admin') === 'true';
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     const userId = sessionStorage.getItem('userId');
     
+    // 2. DOM 요소 가져오기
     const profileArea = document.getElementById('adminProfileArea');
     const adminNameDisplay = document.getElementById('adminNameDisplay');
     const profileImg = document.getElementById('profileBtn');
+    const userAuthArea = document.getElementById('userAuthArea'); // 추가된 로그인/회원가입 버튼 영역
 
-    // admin 또는 일반 로그인 사용자 모두 처리
+    // 3. 로그인 상태 (관리자 또는 일반 사용자)에 따른 UI 제어
     if ((isAdmin || isLoggedIn) && profileArea) {
+        // 로그인 상태라면: 프로필 영역 보이고, 로그인 버튼 영역 숨김
         profileArea.style.display = 'flex';
+        if (userAuthArea) userAuthArea.style.display = 'none';
         
         const database = (typeof db !== 'undefined') ? db : firebase.database();
         
         if (isAdmin) {
-            // 기존 admin 로직
+            // --- 기존 관리자 로직 ---
             database.ref('adminInfo').once('value')
                 .then(snap => {
                     const info = snap.val();
@@ -374,12 +378,18 @@ function updateUI() {
                 })
                 .catch(err => console.error("Firebase 데이터 로드 실패:", err));
         } else if (isLoggedIn && userId) {
-            // index.html에서 로그인한 사용자 처리
-            // jakor Firebase에서 사용자 정보 가져오기
-            const jakorDb = firebase.initializeApp(
-                { databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/" }, 
-                'jakor'
-            ).database();
+            // --- 일반 사용자 로직 ---
+            // 'jakor' 별칭으로 Firebase가 이미 초기화되어 있는지 확인 후 처리
+            let jakorApp;
+            try {
+                jakorApp = firebase.app('jakor');
+            } catch (e) {
+                jakorApp = firebase.initializeApp(
+                    { databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/" }, 
+                    'jakor'
+                );
+            }
+            const jakorDb = jakorApp.database();
             
             jakorDb.ref(`users/${userId}`).once('value')
                 .then(snap => {
@@ -387,7 +397,7 @@ function updateUI() {
                         const userData = snap.val();
                         let avatarSrc = userData.avatar || 'images/profiles/default.png';
                         
-                        // 경로 처리
+                        // 경로 처리 로직
                         if (avatarSrc.startsWith('../')) {
                             avatarSrc = avatarSrc.replace('../', '');
                         } else if (avatarSrc.includes('image-') && !avatarSrc.includes('/')) {
@@ -401,15 +411,17 @@ function updateUI() {
                 .catch(err => console.error("사용자 정보 로드 실패:", err));
         }
             
-    } else if (profileArea) {
-        profileArea.style.display = 'none';
+    } else {
+        // 4. 로그아웃 상태일 때
+        if (profileArea) profileArea.style.display = 'none';
+        if (userAuthArea) userAuthArea.style.display = 'flex'; // 로그인 버튼 영역 다시 표시
     }
 }
 
 function logout() {
     if (!confirm("로그아웃 하시겠습니까?")) return;
     sessionStorage.clear(); // 모든 로그인 정보 삭제
-    location.href = 'index.html';
+    location.href = 'blog.html';
 }
 
 // ── TOP 버튼 ─────────────────────────────────────────────
