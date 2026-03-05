@@ -83,14 +83,32 @@ const db = getDatabase(app);
 async function loadHeader() {
     try {
         const response = await fetch('components/header.html');
+        if (!response.ok) throw new Error('Header load failed');
+        
         const data = await response.text();
         const placeholder = document.getElementById('header-placeholder');
         if (placeholder) {
             placeholder.innerHTML = data;
-            // 헤더가 삽입된 후 Lucide 아이콘 및 기타 UI 로직 실행
-            if(window.lucide) lucide.createIcons();
+
+            // ─── A. 링크 경로 보정 (index.html은 루트이므로 ../ 제거) ───
+            const links = placeholder.querySelectorAll('a');
+            links.forEach(link => {
+                let href = link.getAttribute('href');
+                if (href && !href.startsWith('http') && !href.startsWith('#')) {
+                    // header.html에 ../index.html 로 되어있다면 index.html로 변경
+                    link.setAttribute('href', href.replace('../', ''));
+                }
+            });
+
+            // ─── B. Wavy 애니메이션 초기화 (중요!) ───
+            if (typeof window.initWavyMenu === 'function') {
+                window.initWavyMenu();
+            }
+
+            // ─── C. 기존 UI 로직 실행 ───
+            if (window.lucide) lucide.createIcons();
             initMobileMenu(); 
-            await updateAuthUI(); // 로그인 상태에 따른 버튼 변경
+            await updateAuthUI(); 
         }
     } catch (e) {
         console.error("Header Load Error:", e);
