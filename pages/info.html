@@ -3,142 +3,564 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Board | Jakarta Connect</title>
-    
+    <title>Jakarta Local Info | Essential Guide</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="../css/style.css">
-
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background: var(--bg);
-            overflow: hidden;
-        }
-
-        .construction-container {
-            text-align: center;
-            padding: 40px;
-            border: 1px solid var(--border);
-            background: rgba(13, 26, 36, 0.5);
-            backdrop-filter: blur(10px);
-            max-width: 600px;
-            position: relative;
-        }
-
-        .construction-container::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-            animation: scanline 2s linear infinite;
-        }
-
-        .warning-icon {
-            font-size: 3rem;
-            color: var(--gold);
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        h1 {
-            font-family: var(--font-ui);
-            font-size: 2.5rem;
-            color: var(--cyan);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        p {
-            font-family: var(--font-mono);
-            color: var(--text-soft);
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-        }
-
-        .loading-bar {
-            width: 100%;
-            height: 4px;
-            background: var(--bg-2);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .loading-progress {
-            position: absolute;
-            height: 100%;
-            width: 40%;
-            background: var(--cyan);
-            animation: progressMove 2s infinite ease-in-out;
-        }
-
-        .back-home {
-            text-decoration: none;
-            color: var(--bg);
-            background: var(--cyan);
-            padding: 12px 25px;
-            font-family: var(--font-mono);
-            font-weight: bold;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-
-        .back-home:hover {
-            background: var(--gold);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(212, 168, 67, 0.3);
-        }
-
-        @keyframes progressMove {
-            0% { left: -40%; }
-            100% { left: 100%; }
-        }
-
-        @keyframes scanline {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-    </style>
+<link rel="stylesheet" href="../css/style.css"> 
+<link rel="stylesheet" href="../css/style-info.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+<script type="module" src="../assets/js/presence.js"></script>
 </head>
 <body>
 
+<div class="background-slideshow">
+    <div class="bg-slide active" style="background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);"></div>
+</div>
+
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
     <div class="orb orb-1"></div>
 
-    <div class="construction-container">
-        <span class="warning-icon">⚠️</span>
-        <div class="status-badge">SYSTEM_STATUS: UNDER_CONSTRUCTION</div>
-        <h1>Section Offline</h1>
-        <p>
-            // ACCESSING: Local_infomation.sh... <br>
-            // ERROR: Database link not established. <br>
-            //MESSAGE: The Jakarta Connect community bulletin board is currently undergoing an upgrade. <br>
-Please wait while we optimize the system for better connection service..
-        </p>
+<div id="header-container"></div>
 
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
+    <header class="hero" style="height: 50vh; min-height: 400px;">
+        <div class="hero-grid"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Jakarta<br><em>Local Information</em></h1>
+            <p class="hero-subtitle">Everything you need to know about Jakarta</p>
         </div>
+    </header>
 
-        <a href="../index.html" class="back-home">> RETURN_TO_LOBBY</a>
-    </div>
+    <main class="container" style="padding: 60px 20px;">
+        
+        <!-- Quick Info Cards -->
+        <section id="quick-info" style="margin-bottom: 80px;">
+            <div class="section-title" style="margin-bottom: 40px;">
+                <i data-lucide="info" style="vertical-align: middle; margin-right: 10px;"></i>
+                Quick Information
+            </div>
+            <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                
+                <!-- Weather Card -->
+                <div class="info-card" data-category="weather">
+                    <div class="info-icon">🌤️</div>
+                    <h3>Current Weather</h3>
+                    <div class="info-content">
+                        <p><strong>Temperature:</strong> <span id="temp">Loading...</span></p>
+                        <p><strong>Condition:</strong> <span id="condition">Loading...</span></p>
+                        <p><strong>Humidity:</strong> <span id="humidity">Loading...</span></p>
+                        <p style="font-size: 0.8rem; color: var(--text-soft); margin-top: 10px;">
+                            Jakarta has a tropical monsoon climate. Hot and humid year-round (25-33°C).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Currency Exchange -->
+                <div class="info-card" data-category="economy">
+                    <div class="info-icon">💱</div>
+                    <h3>Currency Exchange</h3>
+                    <div class="info-content">
+                        <p><strong>1 USD =</strong> <span id="usd-rate">15,750</span> IDR</p>
+                        <p><strong>1 EUR =</strong> <span id="eur-rate">17,200</span> IDR</p>
+                        <p><strong>1 SGD =</strong> <span id="sgd-rate">11,650</span> IDR</p>
+                        <p style="font-size: 0.8rem; color: var(--text-soft); margin-top: 10px;">
+                            Currency: Indonesian Rupiah (IDR). ATMs widely available.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Emergency Numbers -->
+                <div class="info-card" data-category="emergency">
+                    <div class="info-icon">🚨</div>
+                    <h3>Emergency Numbers</h3>
+                    <div class="info-content">
+                        <p><strong>Police:</strong> 110</p>
+                        <p><strong>Ambulance:</strong> 118 / 119</p>
+                        <p><strong>Fire:</strong> 113</p>
+                        <p><strong>Tourist Police:</strong> +62 21 5703 6363</p>
+                        <p style="font-size: 0.8rem; color: var(--text-soft); margin-top: 10px;">
+                            Save these numbers in your phone before traveling.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Public Holidays -->
+                <div class="info-card" data-category="holidays">
+                    <div class="info-icon">📅</div>
+                    <h3>2026 Public Holidays</h3>
+                    <div class="info-content" style="max-height: 200px; overflow-y: auto;">
+                        <p><strong>Jan 1:</strong> New Year</p>
+                        <p><strong>Feb 12:</strong> Chinese New Year</p>
+                        <p><strong>Mar 22:</strong> Eid al-Fitr (estimated)</p>
+                        <p><strong>Mar 28:</strong> Nyepi (Balinese New Year)</p>
+                        <p><strong>May 29:</strong> Ascension of Jesus</p>
+                        <p><strong>Jun 1:</strong> Pancasila Day</p>
+                        <p><strong>Aug 17:</strong> Independence Day</p>
+                        <p><strong>Dec 25:</strong> Christmas</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Islamic Culture Guidelines -->
+        <section id="islamic-culture" style="margin-bottom: 80px;">
+            <div class="section-title" style="margin-bottom: 40px;">
+                <i data-lucide="moon" style="vertical-align: middle; margin-right: 10px;"></i>
+                Islamic Culture & Etiquette
+            </div>
+            <div class="card" style="padding: 40px; background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212, 175, 55, 0.2);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                    
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="shirt" style="width: 20px;"></i>
+                            Dress Code
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            Dress modestly, especially when visiting mosques or religious sites. Cover shoulders and knees. 
+                            Women should bring a scarf for mosque visits. Beachwear is only for beaches/pools.
+                        </p>
+                    </div>
+
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="hand" style="width: 20px;"></i>
+                            Left Hand Rule
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            Use your right hand for eating, giving/receiving items, and handshakes. The left hand is 
+                            considered unclean in Islamic culture. Avoid pointing with your index finger.
+                        </p>
+                    </div>
+
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="calendar" style="width: 20px;"></i>
+                            Ramadan (Fasting Month)
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            During Ramadan, avoid eating/drinking in public during daylight hours out of respect. 
+                            Many restaurants close during the day but open after sunset. Business hours may be shorter.
+                        </p>
+                    </div>
+
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="clock" style="width: 20px;"></i>
+                            Prayer Times
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            Muslims pray 5 times daily. You'll hear the call to prayer (Adhan) from mosques. 
+                            Be respectful during prayer times. Some businesses may close briefly for Friday prayers (Jumu'ah).
+                        </p>
+                    </div>
+
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="wine" style="width: 20px;"></i>
+                            Alcohol & Pork
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            Indonesia is not a dry country, but alcohol is not widely available. Pork is prohibited 
+                            in Islam and not commonly served. Look for "halal" labels on food products.
+                        </p>
+                    </div>
+
+                    <div class="culture-item">
+                        <h4 style="color: var(--gold); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="home" style="width: 20px;"></i>
+                            Mosque Visits
+                        </h4>
+                        <p style="line-height: 1.8;">
+                            Remove shoes before entering mosques. Dress modestly (long pants, covered shoulders). 
+                            Women may need to cover their head. Non-Muslims can usually visit outside prayer times.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Tourist Destinations -->
+        <section id="destinations" style="margin-bottom: 80px;">
+            <div class="section-title" style="margin-bottom: 40px;">
+                <i data-lucide="map-pin" style="vertical-align: middle; margin-right: 10px;"></i>
+                Top Tourist Destinations
+            </div>
+            
+            <!-- Category Filter -->
+            <div class="filter-buttons" style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <button class="filter-btn active" onclick="filterDestinations('all')">All</button>
+                <button class="filter-btn" onclick="filterDestinations('historical')">Historical</button>
+                <button class="filter-btn" onclick="filterDestinations('cultural')">Cultural</button>
+                <button class="filter-btn" onclick="filterDestinations('modern')">Modern</button>
+                <button class="filter-btn" onclick="filterDestinations('nature')">Nature</button>
+                <button class="filter-btn" onclick="filterDestinations('shopping')">Shopping</button>
+            </div>
+
+            <div id="destinations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+                <!-- Destinations will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Practical Tips -->
+        <section id="practical-tips" style="margin-bottom: 80px;">
+            <div class="section-title" style="margin-bottom: 40px;">
+                <i data-lucide="lightbulb" style="vertical-align: middle; margin-right: 10px;"></i>
+                Practical Travel Tips
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+                
+                <div class="tip-card">
+                    <div class="tip-icon">🚕</div>
+                    <h4>Transportation</h4>
+                    <p>Use Gojek or Grab apps for safe, affordable rides. TransJakarta bus is efficient. 
+                    Avoid regular taxis unless metered. Traffic is heavy, plan extra time.</p>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">💧</div>
+                    <h4>Water & Food</h4>
+                    <p>Don't drink tap water. Buy bottled water. Street food is generally safe but choose 
+                    busy stalls. Wash hands frequently or carry hand sanitizer.</p>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">💰</div>
+                    <h4>Money Tips</h4>
+                    <p>Carry cash as many small vendors don't accept cards. ATMs widely available. 
+                    Bargaining expected at markets. Keep small bills (50k, 20k IDR) handy.</p>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">📱</div>
+                    <h4>Internet & SIM</h4>
+                    <p>Get a local SIM card at airport or convenience stores (Telkomsel, XL, Indosat). 
+                    4G coverage is good. Free WiFi available in malls and cafes.</p>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">🏥</div>
+                    <h4>Health & Safety</h4>
+                    <p>Dengue fever risk - use mosquito repellent. Bring basic medicines. Major hospitals: 
+                    RS Siloam, RSCM. Travel insurance recommended. Jakarta is generally safe.</p>
+                </div>
+
+                <div class="tip-card">
+                    <div class="tip-icon">💬</div>
+                    <h4>Language</h4>
+                    <p>Bahasa Indonesia is the official language. English spoken in tourist areas and hotels. 
+                    Learn basic phrases: "Terima kasih" (Thank you), "Berapa?" (How much?).</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="main-footer">
+        &copy; 2026 JAKARTA CONNECT // LOCAL INFORMATION SYSTEM
+    </footer>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+    databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Destinations Data
+const destinations = [
+    {
+        name: "Monas (National Monument)",
+        category: "historical",
+        img: "https://images.unsplash.com/photo-1555899434-94d1eb536b8f?w=800",
+        desc: "Iconic 132m tall monument symbolizing Indonesia's independence. Climb to the top for panoramic city views. Surrounded by beautiful Merdeka Square."
+    },
+    {
+        name: "Kota Tua (Old Town)",
+        category: "historical",
+        img: "https://images.unsplash.com/photo-1598946114934-23e177855d42?w=800",
+        desc: "Colonial-era town square with Dutch architecture. Home to museums including Jakarta History Museum. Perfect for photography and history buffs."
+    },
+    {
+        name: "Istiqlal Mosque",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800",
+        desc: "Southeast Asia's largest mosque with stunning modern Islamic architecture. Free guided tours available. Dress modestly and remove shoes."
+    },
+    {
+        name: "Jakarta Cathedral",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800",
+        desc: "Neo-Gothic Catholic cathedral built in 1901. Located directly across from Istiqlal Mosque, symbolizing religious harmony. Beautiful stained glass windows."
+    },
+    {
+        name: "Taman Mini Indonesia Indah",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1578946956088-940963806139?w=800",
+        desc: "Cultural park showcasing Indonesia's diversity with traditional houses from 34 provinces. Museums, cable car, and cultural performances. Full day recommended."
+    },
+    {
+        name: "Ancol Dreamland",
+        category: "modern",
+        img: "https://images.unsplash.com/photo-1594138247290-ce4c39eb469d?w=800",
+        desc: "Largest recreation complex with theme parks, beaches, and SeaWorld. Dunia Fantasi (Dufan) amusement park popular with families. Beach access available."
+    },
+    {
+        name: "Grand Indonesia Mall",
+        category: "shopping",
+        img: "https://images.unsplash.com/photo-1555636222-cae831e670b3?w=800",
+        desc: "Upscale shopping mall in Central Jakarta. High-end brands, restaurants, and cinemas. Connected to Plaza Indonesia. Great AC escape from heat!"
+    },
+    {
+        name: "Pasar Baru",
+        category: "shopping",
+        img: "https://images.unsplash.com/photo-1580159694230-84383c8c3f43?w=800",
+        desc: "Historic shopping district for textiles, fabrics, and traditional Indonesian goods. Bargaining expected. Best visited in the morning. Cash only in most shops."
+    },
+    {
+        name: "Ragunan Zoo",
+        category: "nature",
+        img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800",
+        desc: "140-hectare zoo with over 2,000 animals including Komodo dragons and orangutans. Shaded paths perfect for families. Affordable entrance fee."
+    },
+    {
+        name: "Thousand Islands (Kepulauan Seribu)",
+        category: "nature",
+        img: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+        desc: "Island chain north of Jakarta with white sand beaches and coral reefs. Perfect for snorkeling and diving. Pramuka and Tidung islands most popular."
+    },
+    {
+        name: "Sunda Kelapa Harbor",
+        category: "historical",
+        img: "https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=800",
+        desc: "Historic port with traditional Pinisi schooners. Watch wooden boats being loaded. Part of old Batavia. Best visited early morning."
+    },
+    {
+        name: "Museum Nasional (National Museum)",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1566127444510-0c3de611d5ed?w=800",
+        desc: "Indonesia's premier museum with prehistoric fossils, Hindu-Buddhist artifacts, and ethnographic collections. Known as 'Elephant Museum' due to elephant statue."
+    },
+    {
+        name: "Glodok (Chinatown)",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1581260760258-e4c8e2c96efd?w=800",
+        desc: "Vibrant Chinese district with electronics shops, traditional medicine, and authentic Chinese-Indonesian food. Visit temples and try street food."
+    },
+    {
+        name: "Plaza Senayan",
+        category: "shopping",
+        img: "https://images.unsplash.com/photo-1557821552-17105176677c?w=800",
+        desc: "Premium shopping mall in South Jakarta. Luxury brands, fine dining, and SoGood supermarket. Less crowded than other malls."
+    },
+    {
+        name: "Menteng",
+        category: "historical",
+        img: "https://images.unsplash.com/photo-1580837119756-563d608dd119?w=800",
+        desc: "Elite colonial neighborhood with tree-lined streets and Dutch architecture. Walk around to see historic houses. Many embassies located here."
+    },
+    {
+        name: "Mangga Dua",
+        category: "shopping",
+        img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800",
+        desc: "Massive wholesale market for clothes, electronics, and accessories. Bargain prices but bargaining skills essential. Can be overwhelming for first-timers."
+    },
+    {
+        name: "PIK Avenue",
+        category: "modern",
+        img: "https://images.unsplash.com/photo-1519167758481-83f29b1897ed?w=800",
+        desc: "Trendy waterfront area in North Jakarta with modern restaurants, cafes, and shopping. Popular sunset spot. Instagram-worthy locations."
+    },
+    {
+        name: "Café Batavia",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800",
+        desc: "Historic restaurant in Kota Tua with colonial atmosphere. Fine dining with Indonesian and Western cuisine. Great for experiencing old Batavia charm."
+    },
+    {
+        name: "Tanah Abang Market",
+        category: "shopping",
+        img: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800",
+        desc: "Southeast Asia's largest textile market. Wholesale and retail textiles, clothes, and fabrics. Extremely crowded but unbeatable prices. Watch belongings!"
+    },
+    {
+        name: "National Gallery of Indonesia",
+        category: "cultural",
+        img: "https://images.unsplash.com/photo-1577083552431-6e5fd01bb3ce?w=800",
+        desc: "Contemporary Indonesian art museum. Rotating exhibitions of paintings, sculptures, and installations. Free or low-cost entry. AC and quiet atmosphere."
+    },
+    {
+        name: "Blok M",
+        category: "modern",
+        img: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800",
+        desc: "Entertainment district with nightlife, shopping, and street food. Blok M Square and Plaza are shopping hubs. Good area for budget accommodations."
+    },
+    {
+        name: "SCBD Area",
+        category: "modern",
+        img: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800",
+        desc: "Jakarta's business district with modern skyscrapers. Upscale restaurants, bars, and clubs. Best experienced in evening when buildings are lit up."
+    }
+];
+
+// Load destinations
+function loadDestinations(filter = 'all') {
+    const grid = document.getElementById('destinations-grid');
+    const filtered = filter === 'all' ? destinations : destinations.filter(d => d.category === filter);
+    
+    grid.innerHTML = filtered.map(dest => `
+        <div class="destination-card" data-category="${dest.category}">
+            <img src="${dest.img}" alt="${dest.name}" class="destination-img">
+            <div class="destination-info">
+                <span class="destination-category">${dest.category}</span>
+                <h3>${dest.name}</h3>
+                <p>${dest.desc}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Filter function
+window.filterDestinations = function(category) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    loadDestinations(category);
+};
+
+// Fetch weather (mock data - replace with real API)
+async function loadWeather() {
+    // Using a simple approach - you can integrate real weather API
+    document.getElementById('temp').textContent = '31°C';
+    document.getElementById('condition').textContent = 'Partly Cloudy';
+    document.getElementById('humidity').textContent = '75%';
+}
+
+// Fetch exchange rates (mock data - replace with real API)
+async function loadExchangeRates() {
+    // Mock data - integrate real API like exchangerate-api.com
+    document.getElementById('usd-rate').textContent = '15,750';
+    document.getElementById('eur-rate').textContent = '17,200';
+    document.getElementById('sgd-rate').textContent = '11,650';
+}
+
+// User auth check (same as index.html)
+window.handleLogout = (e) => {
+    e.preventDefault();
+    if(confirm("Do you want to log out of the system?")) {
+        sessionStorage.clear();
+        alert("Logged out successfully.");
+        location.href = '../index.html';
+    }
+};
+
+window.onload = async () => {
+    // 1. Fetch the Header
+    fetch('../components/header.html')
+        .then(response => response.text())
+        .then(async (data) => {
+            // Inject the header HTML
+            document.getElementById('header-container').innerHTML = data;
+            
+            // Re-initialize Lucide icons for the newly added header
+            if(window.lucide) lucide.createIcons();
+
+            // 2. NOW that the header exists, find the elements and handle auth
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            let userId = sessionStorage.getItem('userId');
+            const loginBtn = document.getElementById('login-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const navLinksList = document.querySelector('.nav-links');
+
+            if (isLoggedIn === 'true' && userId && loginBtn) {
+                let userAvatar = "👤"; 
+                try {
+                    const userSnap = await get(ref(db, `users/${userId}`));
+                    if (userSnap.exists() && userSnap.val().avatar) {
+                        userAvatar = userSnap.val().avatar;
+                        if (!userAvatar.includes('/')) {
+                            userAvatar = `../images/profiles/${userAvatar}`;
+                        }
+                    }
+                } catch (e) { console.error("Avatar Load Error:", e); }
+
+                const avatarHtml = (userAvatar.includes('/') || userAvatar.includes('http')) 
+                    ? `<img src="${userAvatar}" 
+                        style="width:32px; height:32px; border-radius:50%; vertical-align:middle; margin-right:8px; border:1px solid var(--cyan); object-fit:cover;" 
+                        onerror="this.onerror=null; this.parentElement.innerHTML='👤 ' + '${userId}';">` 
+                    : `<span style="margin-right:8px; font-size:1.5rem; vertical-align:middle;">${userAvatar}</span>`;
+
+                loginBtn.innerHTML = `${avatarHtml} LOGOUT (${userId})`;
+                loginBtn.href = "#";
+                loginBtn.addEventListener('click', window.handleLogout);
+
+                if (signupBtn) {
+                    signupBtn.innerText = "EDIT_PROFILE";
+                    signupBtn.href = "../profile.html";
+                }
+
+                if (userId === 'admin' && navLinksList) {
+                    const adminLi = document.createElement('li');
+                    adminLi.style.marginLeft = "10px";
+                    adminLi.innerHTML = `<a href="../admin.html" style="color:var(--gold); border:1px solid var(--gold); padding:5px 10px; border-radius:4px; font-weight:bold;">ADMIN_PANEL</a>`;
+                    navLinksList.insertBefore(adminLi, loginBtn.parentElement);
+                }
+            }
+        })
+        .catch(err => console.error("Header load failed:", err));
+
+    // These can run independently of the header
+    loadDestinations();
+    loadWeather();
+    loadExchangeRates();
+};
+
+// Cursor effects
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { 
+    mx = e.clientX; my = e.clientY; 
+    if(dot) { dot.style.left = mx-3+'px'; dot.style.top = my-3+'px'; }
+});
+(function anim() { 
+    rx += (mx-rx)*0.1; ry += (my-ry)*0.1; 
+    if(ring) { ring.style.left = rx+'px'; ring.style.top = ry+'px'; }
+    requestAnimationFrame(anim); 
+})();
+
+// Navbar scroll
+window.addEventListener('scroll', () => {
+    const mainNav = document.getElementById('mainNav');
+    if(mainNav) mainNav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Mobile menu
+const menuToggle = document.getElementById('menuToggle');
+const navLinksContainer = document.getElementById('navLinks');
+
+if (menuToggle && navLinksContainer) {
+    menuToggle.addEventListener('click', () => {
+        navLinksContainer.classList.toggle('active');
+        const icon = menuToggle.querySelector('i');
+        if (icon) {
+            const isOpened = navLinksContainer.classList.contains('active');
+            icon.setAttribute('data-lucide', isOpened ? 'x' : 'menu');
+            if (window.lucide) lucide.createIcons();
+        }
+    });
+}
+</script>
 
 </body>
 </html>

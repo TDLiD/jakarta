@@ -27,7 +27,14 @@
         h1 { font-family: 'Syne', sans-serif; font-size: 1.5rem; margin: 0; color: var(--cyan); }
         .system-status { font-size: 0.8rem; color: var(--gold); }
 
-        /* 통계 카드 */
+        .action-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; }
+        .btn-add { 
+            background: transparent; border: 1px solid var(--gold); color: var(--gold);
+            padding: 8px 15px; cursor: pointer; font-family: 'Space Mono'; font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-add:hover { background: var(--gold); color: black; }
+
         .stats-row {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; margin-bottom: 30px;
@@ -39,7 +46,6 @@
         .stat-card h3 { font-size: 0.7rem; color: var(--gold); margin: 0 0 10px 0; }
         .stat-card .value { font-size: 1.8rem; font-weight: bold; color: var(--chrome); }
 
-        /* 유저 테이블 */
         .table-wrapper {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: 4px; overflow-x: auto;
@@ -49,7 +55,6 @@
         td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         tr:hover { background: rgba(255,255,255,0.02); }
 
-        /* 액션 버튼 */
         .btn-icon {
             background: none; border: 1px solid #333; color: var(--text);
             padding: 5px 8px; cursor: pointer; border-radius: 4px; transition: 0.2s;
@@ -58,8 +63,8 @@
         .btn-edit:hover { border-color: var(--cyan); color: var(--cyan); }
         .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
 
-        /* 모달 스타일 */
-        #edit-modal {
+        /* 모달 공통 */
+        .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
             z-index: 1000; align-items: center; justify-content: center;
         }
@@ -72,12 +77,13 @@
         .form-group label { display: block; font-size: 0.7rem; color: var(--gold); margin-bottom: 5px; }
         .form-group input {
             width: 100%; background: #050a0f; border: 1px solid var(--border);
-            padding: 10px; color: white; border-radius: 4px; box-sizing: border-box;
+            padding: 10px; color: white; border-radius: 4px; box-sizing: border-box; outline: none;
         }
+        .form-group input:focus { border-color: var(--cyan); }
         .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
         .modal-footer button { flex: 1; padding: 12px; cursor: pointer; font-family: 'Space Mono'; font-weight: bold; }
         .btn-save { background: var(--cyan); border: none; color: black; }
-        .btn-close { background: #222; border: none; color: white; }
+        .btn-close-modal { background: #222; border: none; color: white; }
 
         .loading { text-align: center; padding: 50px; color: var(--gold); }
     </style>
@@ -90,8 +96,12 @@
             <h1>ADMIN_OVERRIDE_TERMINAL</h1>
             <div class="system-status">CORE_ACCESS_GRANTED // STAGE_LEVEL: 04</div>
         </div>
-        <button class="btn-close" onclick="location.href='index.html'" style="padding: 5px 15px;">EXIT_TO_HUB</button>
+        <button class="btn-close-modal" onclick="location.href='index.html'" style="padding: 5px 15px; cursor: pointer;">EXIT_TO_HUB</button>
     </header>
+
+    <div class="action-bar">
+        <button class="btn-add" onclick="openAddModal()">[+] ADD_NEW_CITIZEN</button>
+    </div>
 
     <div class="stats-row">
         <div class="stat-card">
@@ -114,14 +124,35 @@
                     <th>MANAGEMENT</th>
                 </tr>
             </thead>
-            <tbody id="user-table-body">
-                </tbody>
+            <tbody id="user-table-body"></tbody>
         </table>
         <div id="loading-bar" class="loading">INITIATING_DATABASE_SCAN...</div>
     </div>
 </div>
 
-<div id="edit-modal">
+<div id="add-modal" class="modal-overlay">
+    <div class="modal-box" style="border-color: var(--gold);">
+        <h2 style="color: var(--gold);">REGISTER_NEW_DATA</h2>
+        <div class="form-group">
+            <label>IDENTITY_ID</label>
+            <input type="text" id="add-id" placeholder="Enter unique ID">
+        </div>
+        <div class="form-group">
+            <label>EMAIL_ADDRESS</label>
+            <input type="email" id="add-email" placeholder="citizen@jakarta.connect">
+        </div>
+        <div class="form-group">
+            <label>PASSWORD_KEY</label>
+            <input type="text" id="add-pw" placeholder="Enter secure password">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-close-modal" onclick="closeAddModal()">ABORT</button>
+            <button class="btn-save" id="save-new-user" style="background: var(--gold);">CREATE_CITIZEN</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-modal" class="modal-overlay">
     <div class="modal-box">
         <h2>OVERRIDE_DATA</h2>
         <input type="hidden" id="edit-target-id">
@@ -134,7 +165,7 @@
             <input type="text" id="edit-pw">
         </div>
         <div class="modal-footer">
-            <button class="btn-close" onclick="closeEditModal()">ABORT</button>
+            <button class="btn-close-modal" onclick="closeEditModal()">ABORT</button>
             <button class="btn-save" id="save-override">APPLY_CHANGES</button>
         </div>
     </div>
@@ -142,18 +173,11 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { databaseURL: "https://jakor-52390-default-rtdb.firebaseio.com/" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
-    // 단순 관리자 체크 (예: 특정 ID만 허용하거나 로그인 여부 확인)
-    const currentUserId = sessionStorage.getItem('userId');
-    if (currentUserId !== 'admin') { // 여기를 실제 관리자 아이디로 수정하세요.
-        // alert("UNAUTHORIZED ACCESS DETECTED.");
-        // location.href = "index.html";
-    }
 
     lucide.createIcons();
 
@@ -162,7 +186,7 @@
     const countTotal = document.getElementById('count-total');
     const countOnline = document.getElementById('count-online');
 
-    // 1. 유저 리스트 실시간 모니터링
+    // 1. 데이터 실시간 모니터링
     onValue(ref(db, 'users'), (snapshot) => {
         loadingBar.style.display = 'none';
         userTableBody.innerHTML = '';
@@ -197,10 +221,45 @@
         }
     });
 
-    // 2. 접속자 수 모니터링
     onValue(ref(db, 'onlineUsers'), (snapshot) => {
         const online = snapshot.val();
         countOnline.innerText = online ? Object.keys(online).length : 0;
+    });
+
+    // 2. 회원 추가 기능
+    window.openAddModal = () => {
+        document.getElementById('add-modal').style.display = 'flex';
+    };
+    window.closeAddModal = () => {
+        document.getElementById('add-modal').style.display = 'none';
+        document.getElementById('add-id').value = '';
+        document.getElementById('add-email').value = '';
+        document.getElementById('add-pw').value = '';
+    };
+
+    document.getElementById('save-new-user').addEventListener('click', async () => {
+        const id = document.getElementById('add-id').value.trim();
+        const email = document.getElementById('add-email').value.trim();
+        const pw = document.getElementById('add-pw').value.trim();
+
+        if (!id || !email || !pw) {
+            alert("REQUIRED_FIELDS_MISSING");
+            return;
+        }
+
+        try {
+            // 중복 체크
+            const userCheck = await get(ref(db, 'users/' + id));
+            if (userCheck.exists()) {
+                alert("ERROR: IDENTITY_ID_ALREADY_EXISTS");
+                return;
+            }
+
+            // 신규 저장
+            await set(ref(db, 'users/' + id), { id, email, pw });
+            alert(`SUCCESS: NEW_CITIZEN [${id}] REGISTERED`);
+            closeAddModal();
+        } catch (e) { alert("SYSTEM_ERROR: " + e.message); }
     });
 
     // 3. 수정 기능
@@ -210,7 +269,6 @@
         document.getElementById('edit-pw').value = pw;
         document.getElementById('edit-modal').style.display = 'flex';
     };
-
     window.closeEditModal = () => {
         document.getElementById('edit-modal').style.display = 'none';
     };

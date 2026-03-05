@@ -395,7 +395,7 @@ function updateUI() {
                 .then(snap => {
                     if (snap.exists()) {
                         const userData = snap.val();
-                        let avatarSrc = userData.avatar || 'images/profiles/default.png';
+                        let avatarSrc = userData.avatar || 'images/profiles/default.webp';
                         
                         // 경로 처리 로직
                         if (avatarSrc.startsWith('../')) {
