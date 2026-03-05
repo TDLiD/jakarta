@@ -96,37 +96,68 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        /* ── 1. Header Loader with Full Auth Integration ── */
-        async function loadHeader() {
-            try {
-                const response = await fetch('components/header.html');
-                if (!response.ok) throw new Error('Header not found');
-                
-                const data = await response.text();
-                const placeholder = document.getElementById('header-placeholder');
-                placeholder.innerHTML = data;
-                
-                // Initialize Lucide icons
-                if (window.lucide) lucide.createIcons();
-                
-                // Setup scroll effect
-                const mainNav = document.getElementById('mainNav');
-                if (mainNav) {
-                    window.addEventListener('scroll', () => {
-                        mainNav.classList.toggle('scrolled', window.scrollY > 40);
-                    }, { passive: true });
-                }
+/* ── 1. Header Loader with Full Auth Integration & Path Fix ── */
+async function loadHeader() {
+    try {
+        // 1. 헤더 파일 가져오기
+        const response = await fetch('components/header.html');
+        if (!response.ok) throw new Error('Header not found');
+        
+        const data = await response.text();
+        const placeholder = document.getElementById('header-placeholder');
+        placeholder.innerHTML = data;
 
-                // Setup mobile menu
-                setupMobileMenu();
-                
-                // Update auth UI with same logic as index.html
-                await updateAuthUI();
-                
-            } catch (err) {
-                console.error("Header Load Error:", err);
+        // 2. [추가] GitHub Pages 경로 보정 (404 오류 해결)
+        // 로컬에서는 /index.html이 루트지만, GitHub에서는 /repository-name/index.html이 루트인 점을 해결합니다.
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        if (isGitHubPages) {
+            const pathSegments = window.location.pathname.split('/');
+            const repoName = pathSegments[1]; // 저장소 이름 추출
+            
+            // 저장소 이름이 있고, 단순 사용자 페이지(tdlid.github.io)가 아닌 경우에만 실행
+            if (repoName && !repoName.includes('.html')) {
+                const links = placeholder.querySelectorAll('a');
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    // 절대 경로(/)로 시작하는 내부 링크만 수정
+                    if (href && href.startsWith('/') && !href.startsWith('http')) {
+                        link.href = `/${repoName}${href}`;
+                    }
+                });
             }
         }
+        
+        // 3. Lucide 아이콘 초기화
+        if (window.lucide) lucide.createIcons();
+        
+        // 4. 스크롤 효과 설정
+        const mainNav = document.getElementById('mainNav');
+        if (mainNav) {
+            window.addEventListener('scroll', () => {
+                mainNav.classList.toggle('scrolled', window.scrollY > 40);
+            }, { passive: true });
+        }
+
+        // 5. 모바일 메뉴 설정
+        if (typeof setupMobileMenu === 'function') {
+            setupMobileMenu();
+        }
+        
+        // 6. 인증 UI 업데이트
+        if (typeof updateAuthUI === 'function') {
+            await updateAuthUI();
+        }
+
+        // 7. [중요] 3D Wavy 효과 초기화 (HTML이 DOM에 들어온 후 실행)
+        // 주의: initWavyMenu 함수는 header.html 내부가 아닌, 호출하는 페이지의 <script>나 공통 js에 있어야 합니다.
+        if (typeof window.initWavyMenu === 'function') {
+            window.initWavyMenu();
+        }
+        
+    } catch (err) {
+        console.error("Header Load Error:", err);
+    }
+}
 
         /* ── 2. Mobile Menu Setup (Same as index.html) ── */
         function setupMobileMenu() {
