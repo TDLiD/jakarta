@@ -10,8 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <!-- Main Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/style-blog.css">
@@ -220,11 +221,18 @@ async function updateAuthUI() {
         try {
             const userSnap = await get(ref(db, `users/${userId}`));
             if (userSnap.exists() && userSnap.val().avatar) {
-                let avatarData = userSnap.val().avatar;
-                userAvatar = avatarData.replace('../', '');
-                if (avatarData.includes('image-') && !avatarData.includes('/')) {
-                    userAvatar = `images/profiles/${avatarData}`;
-                }
+let avatarData = userSnap.val().avatar;
+
+if (avatarData.startsWith('http')) {
+    userAvatar = avatarData;
+} else if (avatarData.startsWith('../images/')) {
+    userAvatar = avatarData.replace('../', '');
+} else if (avatarData.startsWith('images/')) {
+    userAvatar = avatarData;
+} else {
+    // image-029.gif 파일명만 있는 경우
+    userAvatar = `images/profiles/${avatarData}`;
+}
             }
         } catch (e) { 
             console.error("Avatar Load Error:", e); 
@@ -317,4 +325,3 @@ async function updateAuthUI() {
     </script>
 </body>
 </html>
-

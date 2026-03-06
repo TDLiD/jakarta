@@ -136,16 +136,26 @@ async function updateAuthUI() {
 
     if (isLoggedIn === 'true' && userId && loginBtn) {
         let userAvatar = "👤"; 
-        try {
-            const userSnap = await get(ref(db, `users/${userId}`));
-            if (userSnap.exists() && userSnap.val().avatar) {
-                let avatarData = userSnap.val().avatar;
-                userAvatar = avatarData.replace('../', '');
-                if (avatarData.includes('image-') && !avatarData.includes('/')) {
-                    userAvatar = `images/profiles/${avatarData}`;
-                }
-            }
-        } catch (e) { console.error("Avatar Load Error:", e); }
+try {
+    const userSnap = await get(ref(db, `users/${userId}`));
+    if (userSnap.exists() && userSnap.val().avatar) {
+        let avatarData = userSnap.val().avatar;
+
+        if (avatarData.startsWith('http')) {
+            // 외부 URL이면 그대로 사용
+            userAvatar = avatarData;
+        } else if (avatarData.startsWith('../images/')) {
+            // ../images/profiles/image-029.gif → images/profiles/image-029.gif
+            userAvatar = avatarData.replace('../', '');
+        } else if (avatarData.startsWith('images/')) {
+            // images/profiles/image-029.gif → 그대로
+            userAvatar = avatarData;
+        } else {
+            // image-029.gif (파일명만) → images/profiles/image-029.gif
+            userAvatar = `images/profiles/${avatarData}`;
+        }
+    }
+} catch (e) { console.error("Avatar Load Error:", e); }
 
         const avatarHtml = (userAvatar.includes('/') || userAvatar.includes('http')) 
             ? `<img src="${userAvatar}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle; margin-right:8px; border:1px solid var(--cyan); object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=${userId}'">` 
