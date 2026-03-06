@@ -472,6 +472,15 @@ window.onload = async () => {
             // Inject the header HTML
             document.getElementById('header-container').innerHTML = data;
             
+        // ✅ pages/ 하위이므로 상대 경로에 ../ 접두어 추가
+        const links = document.querySelectorAll('#header-container a');
+        links.forEach(link => {
+            let href = link.getAttribute('href');
+            if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('../')) {
+                link.setAttribute('href', '../' + href);
+            }
+        });
+
             // Re-initialize Lucide icons for the newly added header
             if(window.lucide) lucide.createIcons();
 
